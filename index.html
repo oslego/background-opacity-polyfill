@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSS background-opacity polyfill</title>
+  <style>
+
+    .demo {
+      width: 480px;
+      height: 350px;
+      background: url(image.jpg);
+      background-size: contain;
+      background-repeat: no-repeat;
+
+      position: relative;
+      float: left;
+    }
+
+    .demo::before {
+      content: attr(label);
+      position: absolute;
+      top: 0;
+      left: 0;
+      display: inline-block;
+      background: rgba(255,255,255,0.7);
+      padding: 5px 10px;
+    }
+
+  </style>
+</head>
+<body>
+  <h1>CSS <code>background-opacity</code> polyfill</h1>
+  <p>This is only a proof of concept. Not ready for production.</p>
+
+  <div class="demo" label="default"></div>
+  <div class="demo" label="background-opacity: 0.5" id="test"></div>
+
+  <script type="text/javascript">
+    function polyfill(target, declaration) {
+      const opacity = declaration['background-opacity'] || 1;
+      if (opacity === 1) { return }
+
+      const bgImage = window.getComputedStyle(target)['background-image'];
+      console.log(bgImage)
+      if (bgImage === 'none') { return }
+
+      // Extract image source path. Ex: url("image.jpg") => image.jpg
+      // NOTE: Computed style for `background-image` includes quotes in Chrome, but does not include quotes in Sfari & Firefox.
+      // TODO: account for multiple bg images
+      const { startOffset, endOffset } = /[\'\"]/.test(bgImage)
+          ? { startOffset: 5, endOffset: 2 }
+          : { startOffset: 4, endOffset: 1 };
+
+      const src = bgImage.substring(startOffset, bgImage.length - endOffset);
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext("2d");
+
+      const img = new Image();
+
+      img.onload = function () {
+        const width = img.naturalWidth;
+        const height = img.naturalHeight;
+
+        // Size canvas to fit image;
+        context.canvas.width  = width;
+        context.canvas.height = height;
+
+        context.globalAlpha = opacity;
+        context.drawImage(img, 0, 0, width, height);
+
+        //TODO: account for multiple bg images
+        target.style['background-image'] = `url(${canvas.toDataURL()})`;
+      }
+
+      img.src = src;
+    }
+
+    polyfill(document.querySelector('#test'), { 'background-opacity': 0.5 })
+
+  </script>
+</body>
+</html>
