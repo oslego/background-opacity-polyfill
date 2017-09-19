@@ -4,7 +4,7 @@ This is a proof of concept for polyfilling a hypothetical CSS property called `b
 
 Inspired by [Hugo Giraudel's tweet](https://twitter.com/hugogiraudel/status/909701601232867328);
 
-[Live demo]()
+[Live demo](https://oslego.github.io/background-opacity-polyfill)
 
 ## Method
 - get computed style of element `background-image`;
